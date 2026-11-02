@@ -1,0 +1,24 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: scan-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/upgradepilot}
+    username: ${DB_USER:upgradepilot}
+    password: ${DB_PASSWORD:upgradepilot}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update   # MVP only. Switch to Flyway before real customers.
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+upgradepilot:
+  rag:
+    enabled: ${RAG_ENABLED:true}
+    base-url: ${RAG_BASE_URL:http://localhost:8082}
+    max-explanations: 5   # caps LLM calls (and cost) per scan

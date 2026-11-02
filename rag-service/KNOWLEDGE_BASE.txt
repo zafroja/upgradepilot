@@ -1,0 +1,8 @@
+Knowledge base for rag-service. Every .md/.txt file in this folder is chunked,
+embedded and stored in pgvector when you call POST /api/rag/ingest.
+
+These starter notes are short summaries written for this project. Improve answer
+quality by adding more material you are allowed to use: official Spring Boot /
+Spring Security / Spring Cloud migration guides and release notes (check each
+source's license), plus your own notes from real upgrades such as PiggyMetrics.
+Your own upgrade notes are the moat: competitors can't copy them.

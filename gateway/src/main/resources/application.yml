@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      routes:
+        # Only the scan API is public. rag-service stays internal.
+        - id: scan-service
+          uri: ${SCAN_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/scans/**,/api/scans
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

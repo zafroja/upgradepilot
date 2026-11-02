@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: upgradepilot
+      POSTGRES_USER: upgradepilot
+      POSTGRES_PASSWORD: upgradepilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U upgradepilot"]
+      interval: 5s
+      retries: 10
+
+  rag-service:
+    build:
+      context: .
+      args:
+        MODULE: rag-service
+    environment:
+      PGVECTOR_HOST: postgres
+      PGVECTOR_USER: upgradepilot
+      PGVECTOR_PASSWORD: upgradepilot
+      RAG_DOCS_PATH: /app/docs-corpus
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5}
+    volumes:
+      - ./rag-service/docs-corpus:/app/docs-corpus:ro
+    ports:
+      - "127.0.0.1:8082:8082"   # internal only; exposed locally so you can call /ingest
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  scan-service:
+    build:
+      context: .
+      args:
+        MODULE: scan-service
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/upgradepilot
+      DB_USER: upgradepilot
+      DB_PASSWORD: upgradepilot
+      RAG_BASE_URL: http://rag-service:8082
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: .
+      args:
+        MODULE: gateway
+    environment:
+      SCAN_URL: http://scan-service:8081
+    ports:
+      - "8080:8080"
+    depends_on:
+      - scan-service
+
+volumes:
+  pgdata:
